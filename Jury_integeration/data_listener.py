@@ -5,7 +5,7 @@ import json
 
 class JsonTelemetryListener(Node):
     def __init__(self):
-        super().__init__('telemetry_listener')
+        super().__init__('data_listener')
         self.telemetry_subscription = self.create_subscription(
             String,
             'json_telemetry',
@@ -17,6 +17,11 @@ class JsonTelemetryListener(Node):
             'dogfight_data',
             self.dogfight_listener_callback,
             10)
+        self.dedection_subscription = self.create_subscription(
+            String,
+            'detection_data',
+            self.dedection_listener_callback,
+            10)
 
     def telemetry_listener_callback(self, msg):
         # Extract JSON string from the message
@@ -26,13 +31,19 @@ class JsonTelemetryListener(Node):
         telemetry_data = json.loads(json_str)
         
         # Log the received data
-        # self.get_logger().info(f'Received JSON data: {telemetry_data}')
+        self.get_logger().info(f'Received JSON data: {telemetry_data}')
         
     def dogfight_listener_callback(self, msg):
         json_str = msg.data
         dogfight_data = json.loads(json_str)
         
         self.get_logger().info(f'Received dogfight data: {dogfight_data}')
+        
+    def dedection_listener_callback(self, msg):
+        json_str = msg.data
+        dedection_data = json.loads(json_str)
+        
+        self.get_logger().info(f'Received dedection data: {dedection_data}')
     
         
 
