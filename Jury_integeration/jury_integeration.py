@@ -27,7 +27,13 @@ class JsonTelemetryListener(Node):
             'detection_data',
             self.dedection_listener_callback,
             10)
+        
+        self.publish_redzones()
+        
+        
 
+        
+    
     def telemetry_listener_callback(self, msg):
         # Extract JSON string from the message
         json_str = msg.data
@@ -36,7 +42,14 @@ class JsonTelemetryListener(Node):
         telemetry_data = json.loads(json_str)
         
         # Log the received data
-        # self.get_logger().info(f'Received JSON data: {telemetry_data}')
+        self.get_logger().info(f'Received JSON data: {telemetry_data}')
+        
+        ENDPOINT = '/api/telemetri_gonder'
+        payload = telemetry_data
+        
+        response = requests.post(f'{JsonTelemetryListener.BASE_URL}{ENDPOINT}', data=json.dumps(payload), headers={'Content-Type': 'application/json'})
+        print(response.status_code)
+        print(response.json())
         
     def dogfight_listener_callback(self, msg):
         
@@ -51,6 +64,7 @@ class JsonTelemetryListener(Node):
         response = requests.post(f'{JsonTelemetryListener.BASE_URL}{ENDPOINT}', data=json.dumps(payload), headers={'Content-Type': 'application/json'})
         print(response.status_code)
         print(response.json())
+    
         
         
         
@@ -58,7 +72,23 @@ class JsonTelemetryListener(Node):
         json_str = msg.data
         dedection_data = json.loads(json_str)
         
-        # self.get_logger().info(f'Received dedection data: {dedection_data}')
+        self.get_logger().info(f'Received dedection data: {dedection_data}')
+    
+    
+    def publish_redzones(self):
+            redzone_publisher = self.create_publisher(String, 'redzones', 10)
+            
+            response = requests.get(f'{self.BASE_URL}/api/redzones')
+            if response.status_code == 200:
+                print("Redzones fetched successfully")
+                redzones = response.json()
+                msg = String()
+                msg.data = json.dumps(redzones)
+                redzone_publisher.publish(msg)
+            else:
+                print("Failed to fetch redzones")
+        
+        
     
         
 

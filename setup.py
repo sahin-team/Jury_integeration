@@ -20,9 +20,10 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'test_node = controller.test_node:main',
-            'telemetry_sender_node = controller.telemetry_sender_node:main',
-            'telemetry_listener = controller.telemetry_listener:main'
+            'telemetry_sender_node = Jury_integeration.telemetry_sender_node:main',
+            'data_listener = Jury_integeration.jury_integeration:main',
+            'dogfight_sender_node = Jury_integeration.dogfight_sender_node:main',
+            'dedection_sender = Jury_integeration.dedection_sender:main',
         ],
     },
 )
