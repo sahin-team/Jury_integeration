@@ -78,7 +78,7 @@ def main(args=None):
         dogfight_json_publisher.publish(dogfight_json_msg)
 
     # Create timer
-    timer_period = 3.0  # 3 second
+    timer_period = 1.0  # 3 second
     timer = node.create_timer(timer_period, timer_callback)
     dogfight_timer = node.create_timer(timer_period, timer_callback)
 

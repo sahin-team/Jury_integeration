@@ -7,7 +7,7 @@ class detectionPublisher(Node):
     def __init__(self):
         super().__init__('detection_sender')
         self.dogfight_publisher = self.create_publisher(String, 'detection_data', 10)
-        self.timer = self.create_timer(3, self.timer_callback)
+        self.timer = self.create_timer(1, self.timer_callback)
         self.i = 0
 
     def timer_callback(self):

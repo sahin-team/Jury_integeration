@@ -3,15 +3,24 @@ from rclpy.node import Node
 from std_msgs.msg import String
 import json
 import requests
+from datetime import datetime, timedelta
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 class JuryIntegration(Node):
     
-    BASE_URL = 'http://localhost:5000'
+    BASE_URL = os.getenv('BASE_URL')
     
     
     def __init__(self):
         super().__init__('data_listener')
         self.detection_data = None
+        self.last_message_time = None
+        self.last_msg_second = None
+        self.last_msg_minute = None
         self.telemetry_subscription = self.create_subscription(
             String,
             'json_telemetry',
@@ -49,9 +58,16 @@ class JuryIntegration(Node):
         
         ENDPOINT = '/api/telemetri_gonder'
         
-        if self.detection_data is None:
-            payload = telemetry_data["data"]
-        else:
+        self.now_time = self._clock.now()
+        
+        seconds = self.now_time.nanoseconds / 1e9
+        time_delta = timedelta(seconds=seconds)
+        datetime_obj = datetime(1970, 1, 1) + time_delta
+
+        now_minute = datetime_obj.minute
+        now_second = datetime_obj.second
+        
+        if self.detection_data is not None and self.last_msg_second in (now_second,now_second-1) and self.last_msg_minute == now_minute:
             
             payload = {
             "takim_numarasi": 1,
@@ -71,9 +87,13 @@ class JuryIntegration(Node):
             "hedef_yukseklik": self.detection_data["data"]["height"],
             "gps_saati": telemetry_data["data"]["gps_saati"]
         }
-        
-        
+        else:
+            payload = telemetry_data["data"]
+            
+            
         self.get_logger().info(f'Received JSON data: {payload}')
+        self.get_logger().info(f'last msg second: {self.last_msg_second}, Second: {now_second}')
+        self.get_logger().info(f'last msg minute: {self.last_msg_minute}, Minute: {now_minute}')
         
         # response = requests.post(f'{JuryIntegration.BASE_URL}{ENDPOINT}', data=json.dumps(payload), headers={'Content-Type': 'application/json'})
         # print(response.status_code)
@@ -84,7 +104,7 @@ class JuryIntegration(Node):
         json_str = msg.data
         dogfight_data = json.loads(json_str)
         
-        self.get_logger().info(f'Received dogfight data: {dogfight_data}')
+        # self.get_logger().info(f'Received dogfight data: {dogfight_data}')
         
         
         ENDPOINT = '/api/otonom_kilitlenme'
@@ -100,11 +120,18 @@ class JuryIntegration(Node):
         json_str = msg.data
         self.detection_data = json.loads(json_str)
         
-        self.get_logger().info(f'Received detection data: {self.detection_data}')
+        # self.get_logger().info(f'Received detection data: {self.detection_data}')
         
-        # Check if the message is empty for two seconds
-        if not msg.data:
-            self.detection_data = None
+        self.last_message_time = self._clock.now()
+        
+        seconds = self.last_message_time.nanoseconds / 1e9
+        time_delta = timedelta(seconds=seconds)
+        datetime_obj = datetime(1970, 1, 1) + time_delta
+
+        self.last_msg_minute = datetime_obj.minute
+        self.last_msg_second = datetime_obj.second
+
+        # self.get_logger().info(f'Minute: {minute}, Second: {self.second}')
         
     
     
