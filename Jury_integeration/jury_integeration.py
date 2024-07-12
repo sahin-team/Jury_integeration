@@ -4,13 +4,14 @@ from std_msgs.msg import String
 import json
 import requests
 
-class JsonTelemetryListener(Node):
+class JuryIntegration(Node):
     
     BASE_URL = 'http://localhost:5000'
     
     
     def __init__(self):
         super().__init__('data_listener')
+        self.detection_data = None
         self.telemetry_subscription = self.create_subscription(
             String,
             'json_telemetry',
@@ -22,13 +23,15 @@ class JsonTelemetryListener(Node):
             'dogfight_data',
             self.dogfight_listener_callback,
             10)
-        self.dedection_subscription = self.create_subscription(
+
+        self.detection_subscription = self.create_subscription(
             String,
             'detection_data',
-            self.dedection_listener_callback,
+            self.detection_listener_callback,
             10)
         
-        self.publish_redzones()
+        
+        # self.publish_redzones()
         
         
 
@@ -42,14 +45,39 @@ class JsonTelemetryListener(Node):
         telemetry_data = json.loads(json_str)
         
         # Log the received data
-        self.get_logger().info(f'Received JSON data: {telemetry_data}')
+        
         
         ENDPOINT = '/api/telemetri_gonder'
-        payload = telemetry_data
         
-        response = requests.post(f'{JsonTelemetryListener.BASE_URL}{ENDPOINT}', data=json.dumps(payload), headers={'Content-Type': 'application/json'})
-        print(response.status_code)
-        print(response.json())
+        if self.detection_data is None:
+            payload = telemetry_data["data"]
+        else:
+            
+            payload = {
+            "takim_numarasi": 1,
+            "iha_enlem": telemetry_data["data"]["iha_enlem"],
+            "iha_boylam": telemetry_data["data"]["iha_boylam"],
+            "iha_irtifa": telemetry_data["data"]["iha_irtifa"],
+            "iha_dikilme": telemetry_data["data"]["iha_dikilme"],
+            "iha_yonelme": telemetry_data["data"]["iha_yonelme"],
+            "iha_yatis": telemetry_data["data"]["iha_yatis"],
+            "iha_hiz": telemetry_data["data"]["iha_hiz"],
+            "iha_batarya": telemetry_data["data"]["iha_batarya"],
+            "iha_otonom": telemetry_data["data"]["iha_otonom"],
+            "iha_kilitlenme": 1,
+            "hedef_merkez_X": self.detection_data["data"]["x"],
+            "hedef_merkez_Y": self.detection_data["data"]["y"],
+            "hedef_genislik": self.detection_data["data"]["width"],
+            "hedef_yukseklik": self.detection_data["data"]["height"],
+            "gps_saati": telemetry_data["data"]["gps_saati"]
+        }
+        
+        
+        self.get_logger().info(f'Received JSON data: {payload}')
+        
+        # response = requests.post(f'{JuryIntegration.BASE_URL}{ENDPOINT}', data=json.dumps(payload), headers={'Content-Type': 'application/json'})
+        # print(response.status_code)
+        # print(response.json())
         
     def dogfight_listener_callback(self, msg):
         
@@ -61,32 +89,37 @@ class JsonTelemetryListener(Node):
         
         ENDPOINT = '/api/otonom_kilitlenme'
         payload = dogfight_data
-        response = requests.post(f'{JsonTelemetryListener.BASE_URL}{ENDPOINT}', data=json.dumps(payload), headers={'Content-Type': 'application/json'})
+        response = requests.post(f'{JuryIntegration.BASE_URL}{ENDPOINT}', data=json.dumps(payload), headers={'Content-Type': 'application/json'})
         print(response.status_code)
         print(response.json())
     
         
         
         
-    def dedection_listener_callback(self, msg):
+    def detection_listener_callback(self, msg):
         json_str = msg.data
-        dedection_data = json.loads(json_str)
+        self.detection_data = json.loads(json_str)
         
-        self.get_logger().info(f'Received dedection data: {dedection_data}')
+        self.get_logger().info(f'Received detection data: {self.detection_data}')
+        
+        # Check if the message is empty for two seconds
+        if not msg.data:
+            self.detection_data = None
+        
     
     
-    def publish_redzones(self):
-            redzone_publisher = self.create_publisher(String, 'redzones', 10)
+    # def publish_redzones(self):
+    #         redzone_publisher = self.create_publisher(String, 'redzones', 10)
             
-            response = requests.get(f'{self.BASE_URL}/api/redzones')
-            if response.status_code == 200:
-                print("Redzones fetched successfully")
-                redzones = response.json()
-                msg = String()
-                msg.data = json.dumps(redzones)
-                redzone_publisher.publish(msg)
-            else:
-                print("Failed to fetch redzones")
+    #         response = requests.get(f'{self.BASE_URL}/api/redzones')
+    #         if response.status_code == 200:
+    #             print("Redzones fetched successfully")
+    #             redzones = response.json()
+    #             msg = String()
+    #             msg.data = json.dumps(redzones)
+    #             redzone_publisher.publish(msg)
+    #         else:
+    #             print("Failed to fetch redzones")
         
         
     
@@ -95,7 +128,7 @@ class JsonTelemetryListener(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    listener = JsonTelemetryListener()
+    listener = JuryIntegration()
     rclpy.spin(listener)
     
     # Shutdown the listener
