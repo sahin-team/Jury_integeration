@@ -3,7 +3,7 @@ from rclpy.node import Node
 from std_msgs.msg import String
 import json
 
-class dogfightPubliher(Node):
+class dogfightPublisher(Node):
     def __init__(self):
         super().__init__('example_publisher')
         self.dogfight_publisher = self.create_publisher(String, 'dogfight_data', 10)
@@ -41,7 +41,7 @@ class dogfightPubliher(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = dogfightPubliher()
+    node = dogfightPublisher()
     rclpy.spin(node)
     rclpy.shutdown()
 

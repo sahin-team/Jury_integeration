@@ -42,12 +42,11 @@ class JuryIntegration(Node):
             10)
         
         
-        self.publish_redzones()
+        self.publish_hss_koordinatlari()
+        
+        self.publish_qr_koordinati()
         
         
-        
-        
-
         
     
     def telemetry_listener_callback(self, msg):
@@ -143,18 +142,32 @@ class JuryIntegration(Node):
         
     
     
-    def publish_redzones(self):
-            redzone_publisher = self.create_publisher(String, 'redzones', 10)
+    def publish_hss_koordinatlari(self):
+            redzone_publisher = self.create_publisher(String, 'hss_koordinatlari', 10)
             
-            response = requests.get(f'{self.BASE_URL}/api/redzones')
+            response = requests.get(f'{self.BASE_URL}/api/hss_koordinatlari')
             if response.status_code == 200:
-                print("Redzones fetched successfully")
-                redzones = response.json()
+                print("hss_koordinatlari fetched successfully") 
+                hss_koordinatlari = response.json()
                 msg = String()
-                msg.data = json.dumps(redzones)
+                msg.data = json.dumps(hss_koordinatlari)
                 redzone_publisher.publish(msg)
             else:
-                print("Failed to fetch redzones")
+                print("Failed to fetch hss_koordinatlari")
+    
+    def publish_qr_koordinati(self):
+        qr_publisher = self.create_publisher(String, 'qr_koordinati', 10)
+        
+        response = requests.get(f'{self.BASE_URL}/api/qr_koordinati')
+        if response.status_code == 200:
+            print("QR codes fetched successfully")
+            print(response.json())
+            qr_koordinati = response.json()
+            msg = String()
+            msg.data = json.dumps(qr_koordinati)
+            qr_publisher.publish(msg)
+        else:
+            print("Failed to fetch QR codes")
         
         
     
