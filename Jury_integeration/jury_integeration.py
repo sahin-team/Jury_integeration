@@ -27,6 +27,8 @@ class JuryIntegration(Node):
             self.telemetry_listener_callback,
             10)
         
+        self.target_telemetry_publisher = self.create_publisher(String, 'target_telemetry', 10)
+        
         self.dogfight_subscription = self.create_subscription(
             String,
             'dogfight_data',
@@ -40,7 +42,9 @@ class JuryIntegration(Node):
             10)
         
         
-        # self.publish_redzones()
+        self.publish_redzones()
+        
+        
         
         
 
@@ -92,19 +96,23 @@ class JuryIntegration(Node):
             
             
         self.get_logger().info(f'Received JSON data: {payload}')
-        self.get_logger().info(f'last msg second: {self.last_msg_second}, Second: {now_second}')
-        self.get_logger().info(f'last msg minute: {self.last_msg_minute}, Minute: {now_minute}')
+        # self.get_logger().info(f'last msg second: {self.last_msg_second}, Second: {now_second}')
+        # self.get_logger().info(f'last msg minute: {self.last_msg_minute}, Minute: {now_minute}')
         
-        # response = requests.post(f'{JuryIntegration.BASE_URL}{ENDPOINT}', data=json.dumps(payload), headers={'Content-Type': 'application/json'})
-        # print(response.status_code)
+        response = requests.post(f'{JuryIntegration.BASE_URL}{ENDPOINT}', data=json.dumps(payload), headers={'Content-Type': 'application/json'})
         # print(response.json())
+        
+        # Publish the response in JSON format
+        response_msg = String()
+        response_msg.data = json.dumps(response.json())
+        self.target_telemetry_publisher.publish(response_msg)
         
     def dogfight_listener_callback(self, msg):
         
         json_str = msg.data
         dogfight_data = json.loads(json_str)
         
-        # self.get_logger().info(f'Received dogfight data: {dogfight_data}')
+        self.get_logger().info(f'Received dogfight data: {dogfight_data}')
         
         
         ENDPOINT = '/api/otonom_kilitlenme'
@@ -135,18 +143,18 @@ class JuryIntegration(Node):
         
     
     
-    # def publish_redzones(self):
-    #         redzone_publisher = self.create_publisher(String, 'redzones', 10)
+    def publish_redzones(self):
+            redzone_publisher = self.create_publisher(String, 'redzones', 10)
             
-    #         response = requests.get(f'{self.BASE_URL}/api/redzones')
-    #         if response.status_code == 200:
-    #             print("Redzones fetched successfully")
-    #             redzones = response.json()
-    #             msg = String()
-    #             msg.data = json.dumps(redzones)
-    #             redzone_publisher.publish(msg)
-    #         else:
-    #             print("Failed to fetch redzones")
+            response = requests.get(f'{self.BASE_URL}/api/redzones')
+            if response.status_code == 200:
+                print("Redzones fetched successfully")
+                redzones = response.json()
+                msg = String()
+                msg.data = json.dumps(redzones)
+                redzone_publisher.publish(msg)
+            else:
+                print("Failed to fetch redzones")
         
         
     
