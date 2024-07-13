@@ -20,10 +20,13 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'telemetry_sender_node = Jury_integeration.telemetry_sender_node:main',
-            'data_listener = Jury_integeration.jury_integeration:main',
-            'dogfight_sender_node = Jury_integeration.dogfight_sender_node:main',
-            'dedection_sender = Jury_integeration.dedection_sender:main',
+            'test_telemetry_sender_node = Jury_integration.test_telemetry_sender_node:main',
+            'Jury_integration = Jury_integration.jury_integration:main',
+            'test_dogfight_sender_node = Jury_integration.test_dogfight_sender_node:main',
+            'test_detection_sender = Jury_integration.test_detection_sender:main',
+            'test_redzones_subscribe = Jury_integration.test_redzones_subscribe:main',
+            'test_qr = Jury_integration.test_qr:main',
+            'test_target_telemetry = Jury_integration.test_target_telemetry:main',
         ],
     },
 )

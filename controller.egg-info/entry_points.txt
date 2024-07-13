@@ -1,0 +1,6 @@
+[console_scripts]
+dogfight_sender_node = Jury_integration.dogfight_sender_node:main
+jury_integration = Jury_integration.jury_integration:main
+telemetry_sender_node = Jury_integration.test_telemetry_sender_node:main
+test_detection_sender = Jury_integration.test_detection_sender:main
+

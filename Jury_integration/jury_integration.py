@@ -8,11 +8,11 @@ import os
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv()
+load_dotenv('/root/catkin_ws/controller/Jury_integration/.env')
 
 class JuryIntegration(Node):
     
-    BASE_URL = os.getenv('BASE_URL')
+    BASE_URL = os.getenv('BASE_URL', 'http://localhost:5000')
     
     
     def __init__(self):
@@ -145,7 +145,7 @@ class JuryIntegration(Node):
     def publish_hss_koordinatlari(self):
             redzone_publisher = self.create_publisher(String, 'hss_koordinatlari', 10)
             
-            response = requests.get(f'{self.BASE_URL}/api/hss_koordinatlari')
+            response = requests.get(f'{JuryIntegration.BASE_URL}/api/hss_koordinatlari')
             if response.status_code == 200:
                 print("hss_koordinatlari fetched successfully") 
                 hss_koordinatlari = response.json()
